@@ -1,5 +1,11 @@
+import time
+import requests
 import streamlit as st
+
+# Tool imports
 from components.npv_tools import render_npv_tool
+from components.CAPM import render_capm_tool
+
 
 # ---------------------------------------------------------
 # PAGE CONFIG + REMOVE SIDEBAR
@@ -19,35 +25,41 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------
-# ROUTER
+# ROUTER INITIALIZATION
 # ---------------------------------------------------------
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-
-def go_to(page):
+def go_to(page: str):
     st.session_state.page = page
     st.rerun()
 
 
 # ---------------------------------------------------------
-# NPV TOOL PAGE
+# ROUTES
 # ---------------------------------------------------------
+
+# ---------- CAPM PAGE ----------
+if st.session_state.page == "capm":
+    render_capm_tool(go_to)
+    st.stop()
+
+# ---------- NPV PAGE ----------
 if st.session_state.page == "npv":
 
-    # ✅ FORCE TOOL PAGE TO START AT TOP
+    # Force tool page to start at top
     st.markdown(
         """
         <a id="top"></a>
         <script>
-            document.getElementById("top").scrollIntoView();
+            document.getElementById("top");
         </script>
         """,
         unsafe_allow_html=True
     )
 
-    # Wider layout for tool pages
     st.markdown("""
     <style>
         .block-container {
@@ -57,14 +69,12 @@ if st.session_state.page == "npv":
     </style>
     """, unsafe_allow_html=True)
 
-    # Render NPV tool
     render_npv_tool(go_to)
-
     st.stop()
 
 
 # ---------------------------------------------------------
-# HOME PAGE
+# HOME PAGE (DEFAULT)
 # ---------------------------------------------------------
 
 # Remove anchor links
@@ -77,6 +87,7 @@ h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------
 # GLOBAL CSS
@@ -159,6 +170,7 @@ div.stButton > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------
 # HERO SECTION
 # ---------------------------------------------------------
@@ -173,6 +185,7 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------
 # ABOUT SECTION
@@ -204,27 +217,29 @@ through my Bachelor program.
 </div>
 """, unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------
 # TOOLS HEADER
 # ---------------------------------------------------------
 st.markdown("<div style='height:50px;'></div>", unsafe_allow_html=True)
-
 st.markdown("<h2 style='text-align:center;'>Financial Tools</h2>", unsafe_allow_html=True)
 st.markdown("<div style='height:25px;'></div>", unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------
 # TOOL DEFINITIONS
 # ---------------------------------------------------------
 tools = [
     ("📊", "NPV / IRR / Payback Calculator", "npv", False),
+    ("📉", "CAPM Calculator", "capm", False),
     ("💰", "DCF Valuation Model", None, True),
     ("📈", "Financial Ratios Dashboard", None, True),
-    ("📉", "CAPM Calculator", None, True),
     ("🏦", "Bond Pricing Tool", None, True),
     ("🧮", "WACC Calculator", None, True),
 ]
 
 cols = st.columns(3)
+
 
 # ---------------------------------------------------------
 # TOOL GRID
@@ -255,6 +270,118 @@ for i, (icon, name, route, coming_soon) in enumerate(tools):
         else:
             if st.button(f"{icon}   {name}", use_container_width=True):
                 go_to(route)
+
+
+# ---------------------------------------------------------
+# CONTACT FORM
+# ---------------------------------------------------------
+API_KEY = "re_CX2LaATW_5hPbtxjA2Cf45BaHSjeN1GRG"
+RATE_LIMIT_SECONDS = 30
+
+st.markdown("<h2 style='text-align:center; margin-top:40px;'>Contact Me</h2>", unsafe_allow_html=True)
+
+
+# --- ANIMATION HTML ---
+def animated_message(text):
+    return f"""
+        <div style='text-align:center; margin-top:30px;'>
+            <div style="
+                font-size: 60px;
+                color: #4CAF50;
+                animation: pop 0.4s ease-out;
+            ">✔</div>
+            <div style="
+                font-size: 22px;
+                margin-top: 10px;
+                animation: fadein 1s ease-in;
+            ">
+                {text}
+            </div>
+        </div>
+
+        <style>
+        @keyframes pop {{
+            0% {{ transform: scale(0.5); opacity: 0; }}
+            100% {{ transform: scale(1); opacity: 1; }}
+        }}
+        @keyframes fadein {{
+            0% {{ opacity: 0; }}
+            100% {{ opacity: 1; }}
+        }}
+        </style>
+    """
+
+
+# --- RATE LIMIT CHECK ---
+last_sent = st.session_state.get("last_sent_time", None)
+if last_sent and time.time() - last_sent < RATE_LIMIT_SECONDS:
+    st.markdown(animated_message("Please wait a moment before sending another message."), unsafe_allow_html=True)
+    st.stop()
+
+
+# --- IF MESSAGE ALREADY SENT ---
+if st.session_state.get("message_sent", False):
+    st.markdown(animated_message("Your message has been sent! I'll get back to you as soon as I can."), unsafe_allow_html=True)
+    st.stop()
+
+
+# --- CONTACT FORM ---
+with st.form("contact_form"):
+    name = st.text_input("Your Name")
+    email = st.text_input("Your Email")
+    message = st.text_area("Your Message")
+
+    # PURE HTML HONEYPOT — invisible
+    st.markdown("""
+        <input type="text" id="botfield" name="botfield" style="display:none;">
+        <script>
+            document.getElementById("botfield").value = "";
+        </script>
+    """, unsafe_allow_html=True)
+
+    submitted = st.form_submit_button("Send Message")
+
+    if submitted:
+
+        bot_value = st.session_state.get("botfield", "")
+
+        if bot_value.strip() != "":
+            st.markdown(animated_message("Your message has been sent!"), unsafe_allow_html=True)
+            st.stop()
+
+        if not name or not email or not message:
+            st.error("Please fill in all fields.")
+        else:
+            url = "https://api.resend.com/emails"
+            headers = {
+                "Authorization": f"Bearer {API_KEY}",
+                "Content-Type": "application/json"
+            }
+
+            payload_to_you = {
+                "from": "Scott Quinn <onboarding@resend.dev>",
+                "to": ["scott-quinn1@outlook.com"],
+                "subject": f"New message from {name}",
+                "html": f"""
+                    <h2>New Contact Form Submission</h2>
+                    <p><strong>Name:</strong> {name}</p>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Message:</strong></p>
+                    <p>{message}</p>
+                    <hr>
+                    <p>This message was sent from your portfolio website.</p>
+                """
+            }
+
+            r1 = requests.post(url, json=payload_to_you, headers=headers)
+
+            if r1.status_code == 200:
+                st.session_state["message_sent"] = True
+                st.session_state["last_sent_time"] = time.time()
+                st.rerun()
+            else:
+                st.error("Something went wrong. Please try again later.")
+
 
 # ---------------------------------------------------------
 # FOOTER

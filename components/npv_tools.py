@@ -4,6 +4,18 @@ import numpy_financial as nf
 import pandas as pd
 import plotly.graph_objects as go
 
+
+# Remove anchor links
+st.markdown("""
+<style>
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+    text-decoration: none !important;
+    color: inherit !important;
+    pointer-events: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # -----------------------------
 # Number formatting
 # -----------------------------
