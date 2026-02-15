@@ -6,6 +6,7 @@ import streamlit as st
 from components.npv_tools import render_npv_tool
 from components.CAPM import render_capm_tool
 from components.DCF import render_dcf_tool
+from components.Financial_Statement import render_financial_statement
 
 
 
@@ -52,6 +53,12 @@ if st.session_state.page == "capm":
 if st.session_state.page == "dcf":
     render_dcf_tool(go_to)
     st.stop()
+
+#---------Financial Ratios Page------
+if st.session_state.page == "financial_statement":
+    render_financial_statement(go_to)
+    st.stop()
+
 
 
 # ---------- NPV PAGE ----------
@@ -189,8 +196,11 @@ st.markdown("""
     <p>
         Welcome to my finance portfolio. I have created a collection of tools and frameworks
         that reflect the analytical, structured, and decision-focused work done in modern
-        business controlling and accounting roles.
-    </p>
+        business controlling and accounting roles.<br><br>
+</p>
+<h3>Please contact me with the form below!</h3>
+
+
 </div>
 """, unsafe_allow_html=True)
 
@@ -241,7 +251,7 @@ tools = [
     ("📊", "NPV / IRR / Payback Calculator", "npv", False),
     ("📉", "CAPM Calculator", "capm", False),
     ("💰", "DCF Valuation Model", "dcf", False),
-    ("📈", "Financial Ratios Dashboard", None, True),
+    ("📈", "Financial Ratios Dashboard", "financial_statement", False),
     ("🏦", "Bond Pricing Tool", None, True),
     ("🧮", "WACC Calculator", None, True),
 ]
@@ -283,6 +293,10 @@ for i, (icon, name, route, coming_soon) in enumerate(tools):
 # ---------------------------------------------------------
 # CONTACT FORM
 # ---------------------------------------------------------
+
+# ... your form code here ...
+
+
 API_KEY = "re_CX2LaATW_5hPbtxjA2Cf45BaHSjeN1GRG"
 RATE_LIMIT_SECONDS = 30
 
@@ -334,6 +348,8 @@ if st.session_state.get("message_sent", False):
 
 
 # --- CONTACT FORM ---
+
+st.markdown("<a name='contact'></a>", unsafe_allow_html=True)
 with st.form("contact_form"):
     name = st.text_input("Your Name")
     email = st.text_input("Your Email")
