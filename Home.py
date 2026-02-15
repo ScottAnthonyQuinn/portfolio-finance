@@ -2,16 +2,19 @@ import time
 import requests
 import streamlit as st
 
+import streamlit as st
+
 # Tool imports
 from components.npv_tools import render_npv_tool
 from components.CAPM import render_capm_tool
 from components.DCF import render_dcf_tool
 from components.Financial_Statement import render_financial_statement
 
-
+# Check if user has visited any tool page
+show_nav = st.session_state.get("visited_tool", False)
 
 # ---------------------------------------------------------
-# PAGE CONFIG + REMOVE SIDEBAR
+# PAGE CONFIG
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Scott Quinn – Finance Portfolio",
@@ -20,77 +23,32 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Scroll-to-top script
 st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none !important;}
-    [data-testid="stSidebarNav"] {display: none !important;}
-    [data-testid="collapsedControl"] {display: none !important;}
-</style>
+    <script>
+        window.parent.document.querySelector('iframe').scrollTo(0, 0);
+    </script>
 """, unsafe_allow_html=True)
 
-
 # ---------------------------------------------------------
-# ROUTER INITIALIZATION
+# CONDITIONAL SIDEBAR HIDING
 # ---------------------------------------------------------
-if "page" not in st.session_state:
-    st.session_state.page = "home"
-
-def go_to(page: str):
-    st.session_state.page = page
-    st.rerun()
-
-
-# ---------------------------------------------------------
-# ROUTES
-# ---------------------------------------------------------
-
-# ---------- CAPM PAGE ----------
-if st.session_state.page == "capm":
-    render_capm_tool(go_to)
-    st.stop()
-
-#-----------DCF PAGE-------------
-if st.session_state.page == "dcf":
-    render_dcf_tool(go_to)
-    st.stop()
-
-#---------Financial Ratios Page------
-if st.session_state.page == "financial_statement":
-    render_financial_statement(go_to)
-    st.stop()
-
-
-
-# ---------- NPV PAGE ----------
-if st.session_state.page == "npv":
-
-    # Force tool page to start at top
-    st.markdown(
-        """
-        <a id="top"></a>
-        <script>
-            document.getElementById("top");
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-
+if not show_nav:
     st.markdown("""
     <style>
-        .block-container {
-            max-width: 1500px !important;
-            padding-top: 20px;
-        }
+        [data-testid="stSidebar"] {display: none !important;}
+        [data-testid="stSidebarNav"] {display: none !important;}
+        [data-testid="collapsedControl"] {display: none !important;}
     </style>
     """, unsafe_allow_html=True)
 
-    render_npv_tool(go_to)
-    st.stop()
+
 
 
 # ---------------------------------------------------------
 # HOME PAGE (DEFAULT)
 # ---------------------------------------------------------
+
 
 # Remove anchor links
 st.markdown("""
@@ -251,7 +209,7 @@ tools = [
     ("📊", "NPV / IRR / Payback Calculator", "npv", False),
     ("📉", "CAPM Calculator", "capm", False),
     ("💰", "DCF Valuation Model", "dcf", False),
-    ("📈", "Financial Ratios Dashboard", "financial_statement", False),
+    ("📈", "Financial Ratios Dashboard", "financial_statements", False),
     ("🏦", "Bond Pricing Tool", None, True),
     ("🧮", "WACC Calculator", None, True),
 ]
@@ -267,28 +225,35 @@ for i, (icon, name, route, coming_soon) in enumerate(tools):
     with cols[i % 3]:
 
         if coming_soon:
+            # Match Streamlit page_link button styling
             st.markdown(f"""
             <div style="
                 border: 1px solid #30363d;
                 border-radius: 14px;
-                padding: 26px;
-                height: 200px;
+                padding: 0.75rem 1rem;
+                height: 3.2rem;
                 background-color: #161b22;
-                text-align: center;
-                margin-bottom: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 0.6rem;
+                margin-bottom: 0.5rem;
+                cursor: not-allowed;
+                opacity: 0.55;
             ">
-                <div style="font-size: 2.6rem;">{icon}</div>
-                <div style="font-size: 1.1rem; font-weight: 600; color: #58a6ff;">
-                    {name}
-                </div>
-                <p style="color: #8b949e;">Coming soon</p>
+                <span style="font-size: 1.4rem;">{icon}</span>
+                <span style="font-size: 1rem; font-weight: 600; color: #58a6ff;">
+                    {name} (Coming soon)
+                </span>
             </div>
             """, unsafe_allow_html=True)
 
         else:
-            if st.button(f"{icon}   {name}", use_container_width=True):
-                go_to(route)
-
+            st.page_link(
+                f"pages/{route}.py",
+                label=f"{icon}   {name}",
+                use_container_width=True
+            )
 
 # ---------------------------------------------------------
 # CONTACT FORM

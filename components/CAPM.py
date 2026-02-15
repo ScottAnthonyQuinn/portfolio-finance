@@ -1,6 +1,10 @@
 import streamlit as st
+from components.utils import scroll_top
 
-def render_capm_tool(go_to):
+scroll_top()
+
+
+def render_capm_tool():
 
     # ---------- HEADER ----------
     st.markdown(
@@ -8,10 +12,6 @@ def render_capm_tool(go_to):
         unsafe_allow_html=True,
     )
 
-    # ---------- BACK BUTTON ----------
-    if go_to is not None:
-        if st.button("⬅️ Back to Home", use_container_width=True):
-            go_to("home")
 
     st.markdown("<br>", unsafe_allow_html=True)
 

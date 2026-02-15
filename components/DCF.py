@@ -1,15 +1,15 @@
 import streamlit as st
+from components.utils import scroll_top
 
 
-def render_dcf_tool(go_to):
+scroll_top()
+
+def render_dcf_tool():
 
     # ---------------------------------------------------------
     # HEADER
     # ---------------------------------------------------------
     st.markdown("<h1 style='text-align:center;'>DCF Valuation Model</h1>", unsafe_allow_html=True)
-
-    if st.button("⬅️ Back to Home", use_container_width=True):
-        go_to("home")
 
     st.markdown("<br>", unsafe_allow_html=True)
 

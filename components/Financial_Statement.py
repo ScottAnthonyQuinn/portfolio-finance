@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
+from components.utils import scroll_top
+
+scroll_top()
 
 
-def render_financial_statement(go_to):
+
+def render_financial_statement():
 
     # =========================================================
     # PAGE TITLE
@@ -18,9 +22,6 @@ def render_financial_statement(go_to):
         "We can explore how statements connect and evaluate performance "
         "using key financial ratios. Calculate rations below"
     )
-
-    if st.button("⬅️ Back to Home", use_container_width=True):
-        go_to("home")
 
     st.markdown("---")
 

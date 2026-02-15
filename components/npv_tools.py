@@ -3,6 +3,8 @@ import numpy as np
 import numpy_financial as nf
 import pandas as pd
 import plotly.graph_objects as go
+from components.utils import scroll_top
+
 
 
 # Remove anchor links
@@ -26,6 +28,7 @@ def format_number(n):
 # MAIN RENDER FUNCTION
 # -----------------------------
 def render_npv_tool(go_to=None):
+    scroll_top()
 
     # -----------------------------
     # Page Styling
@@ -43,6 +46,7 @@ def render_npv_tool(go_to=None):
     # Title
     # -----------------------------
     st.title("💰 NPV / IRR / Payback Calculator")
+    scroll_top()
 
     # ✅ Back button UNDER heading
     if go_to is not None:
