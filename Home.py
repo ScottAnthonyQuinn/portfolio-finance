@@ -5,6 +5,8 @@ import streamlit as st
 # Tool imports
 from components.npv_tools import render_npv_tool
 from components.CAPM import render_capm_tool
+from components.DCF import render_dcf_tool
+
 
 
 # ---------------------------------------------------------
@@ -45,6 +47,12 @@ def go_to(page: str):
 if st.session_state.page == "capm":
     render_capm_tool(go_to)
     st.stop()
+
+#-----------DCF PAGE-------------
+if st.session_state.page == "dcf":
+    render_dcf_tool(go_to)
+    st.stop()
+
 
 # ---------- NPV PAGE ----------
 if st.session_state.page == "npv":
@@ -232,7 +240,7 @@ st.markdown("<div style='height:25px;'></div>", unsafe_allow_html=True)
 tools = [
     ("📊", "NPV / IRR / Payback Calculator", "npv", False),
     ("📉", "CAPM Calculator", "capm", False),
-    ("💰", "DCF Valuation Model", None, True),
+    ("💰", "DCF Valuation Model", "dcf", False),
     ("📈", "Financial Ratios Dashboard", None, True),
     ("🏦", "Bond Pricing Tool", None, True),
     ("🧮", "WACC Calculator", None, True),
