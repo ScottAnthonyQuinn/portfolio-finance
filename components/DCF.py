@@ -1,7 +1,6 @@
 import streamlit as st
 from components.utils import scroll_top
 
-
 scroll_top()
 
 def render_dcf_tool():
@@ -23,6 +22,9 @@ def render_dcf_tool():
         <p style='font-size:16px;'>
             It is widely used in corporate finance, investment banking, equity research, and business controlling 
             to support decisions such as acquisitions, investments, and strategic planning.
+        </p>
+        <p style='font-size:16px;'>
+            More information below ↓
         </p>
         """,
         unsafe_allow_html=True,
@@ -103,19 +105,15 @@ def render_dcf_tool():
         revenue = starting_revenue
 
         for year in range(1, int(years) + 1):
-            # Revenue forecast
             revenue = revenue * (1 + rev_growth)
             revenues.append(revenue)
 
-            # EBIT
             ebit = revenue * ebit_m
             ebits.append(ebit)
 
-            # Tax on EBIT
             tax = ebit * t
             taxes.append(tax)
 
-            # D&A, Capex, Working Capital
             da = revenue * da_p
             da_list.append(da)
 
@@ -125,16 +123,11 @@ def render_dcf_tool():
             wc_change = revenue * wc_p
             wc_changes.append(wc_change)
 
-            # Free Cash Flow to Firm (FCFF)
             fcf = ebit * (1 - t) + da - capex - wc_change
             fcfs.append(fcf)
 
-        # Present value of forecast FCFs
-        pv_fcfs = 0
-        for i, fcf in enumerate(fcfs):
-            pv_fcfs += fcf / ((1 + r) ** (i + 1))
+        pv_fcfs = sum(fcf / ((1 + r) ** (i + 1)) for i, fcf in enumerate(fcfs))
 
-        # Terminal value using Gordon Growth
         last_fcf = fcfs[-1]
         if r <= g:
             terminal_value = float("nan")
@@ -143,66 +136,137 @@ def render_dcf_tool():
             terminal_value = last_fcf * (1 + g) / (r - g)
             pv_terminal = terminal_value / ((1 + r) ** years)
 
-        # Enterprise value
         enterprise_value = pv_fcfs + pv_terminal
-
-        # Equity value
         equity_value = enterprise_value - net_debt
-
-        # Per-share value
-        if shares_outstanding > 0:
-            value_per_share = equity_value / shares_outstanding
-        else:
-            value_per_share = float("nan")
+        value_per_share = equity_value / shares_outstanding if shares_outstanding > 0 else float("nan")
 
         # ---------------------------------------------------------
         # OUTPUT
         # ---------------------------------------------------------
         st.success(f"Estimated Enterprise Value: **${enterprise_value:,.2f}**")
+        st.success(f"Estimated Value of Debt: **${net_debt:,.2f}**")
         st.success(f"Estimated Equity Value: **${equity_value:,.2f}**")
         st.success(f"Estimated Value per Share: **${value_per_share:,.2f}**")
 
         st.markdown("---")
 
-        col_a, col_b = st.columns(2)
+        # ---------------------------------------------------------
+        # PREMIUM CARD‑STYLE SUMMARY
+        # ---------------------------------------------------------
+        st.markdown("### 📊 Cash Flow Summary")
 
-        with col_a:
-            st.markdown("### Cash Flow Summary")
-            st.write("**Present Value of Forecast FCFs:**", f"${pv_fcfs:,.2f}")
-            st.write("**Present Value of Terminal Value:**", f"${pv_terminal:,.2f}")
-            st.write("**Undiscounted Terminal Value:**", f"${terminal_value:,.2f}")
+        st.markdown(f"""
+        <div style="
+            background-color:#161b22;
+            padding:18px;
+            border-radius:12px;
+            border:1px solid #30363d;
+            font-size:15px;">
+            <b>Present Value of Forecast FCFs:</b> ${pv_fcfs:,.2f}<br>
+            <b>Present Value of Terminal Value:</b> ${pv_terminal:,.2f}<br>
+            <b>Undiscounted Terminal Value:</b> ${terminal_value:,.2f}
+        </div>
+        """, unsafe_allow_html=True)
 
-        with col_b:
-            st.markdown("### Key Assumptions")
-            st.write("Forecast years:", int(years))
-            st.write("WACC:", f"{wacc:.2f}%")
-            st.write("Terminal growth rate:", f"{terminal_growth:.2f}%")
-            st.write("Tax rate:", f"{tax_rate:.2f}%")
-            st.write("EBIT margin:", f"{ebit_margin:.2f}%")
-            st.write("Capex % of revenue:", f"{capex_percent:.2f}%")
-            st.write("D&A % of revenue:", f"{da_percent:.2f}%")
-            st.write("Δ Working capital % of revenue:", f"{wc_percent:.2f}%")
-            st.write("Net debt:", f"${net_debt:,.2f}")
-            st.write("Shares outstanding:", f"{shares_outstanding:,.0f}")
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        st.markdown("### ⚙️ Key Assumptions")
+
+        st.markdown(f"""
+        <div style="
+            background-color:#161b22;
+            padding:18px;
+            border-radius:12px;
+            border:1px solid #30363d;
+            font-size:15px;">
+            <b>Forecast years:</b> {int(years)}<br>
+            <b>WACC:</b> {wacc:.2f}%<br>
+            <b>Terminal growth rate:</b> {terminal_growth:.2f}%<br>
+            <b>Tax rate:</b> {tax_rate:.2f}%<br>
+            <b>EBIT margin:</b> {ebit_margin:.2f}%<br>
+            <b>Capex % of revenue:</b> {capex_percent:.2f}%<br>
+            <b>D&A % of revenue:</b> {da_percent:.2f}%<br>
+            <b>Δ Working capital % of revenue:</b> {wc_percent:.2f}%<br>
+            <b>Net debt:</b> ${net_debt:,.2f}<br>
+            <b>Shares outstanding:</b> {shares_outstanding:,.0f}
+        </div>
+        """, unsafe_allow_html=True)
 
         st.markdown("---")
 
-        st.markdown(
-            """
-            <p style='color:#8b949e; font-size:14px;'>
-                <strong>What this model does:</strong><br>
-                • Projects revenues and operating profits (EBIT) over a forecast horizon.<br>
-                • Converts EBIT into Free Cash Flow to the Firm (FCFF) after tax, capex, and working capital needs.<br>
-                • Discounts all FCFFs using WACC to obtain their present value.<br>
-                • Calculates a terminal value using the Gordon Growth model and discounts it.<br>
-                • Sums the present values to obtain Enterprise Value, then adjusts for net debt to get Equity Value.<br>
-                • Divides Equity Value by shares outstanding to estimate intrinsic value per share.<br><br>
-<strong>What it is used for:</strong><br>
-                • Valuing companies for investment decisions, M&A, and strategic planning.<br>
-                • Comparing intrinsic value to market price to assess under/overvaluation.<br>
-                • Testing scenarios and sensitivities around growth, margins, and capital intensity.<br>
-            </p>
-            """,
-            unsafe_allow_html=True,
-        )
+    # ---------------------------------------------------------
+    # ADDITIONAL INFORMATION SECTION
+    # ---------------------------------------------------------
+    st.subheader("📘 Additional Information")
 
+    with st.expander("What does this DCF model do?"):
+        st.markdown("""
+This DCF model:
+
+- Projects revenues and operating profits (EBIT)  
+- Converts EBIT into **Free Cash Flow to the Firm (FCFF)**  
+- Discounts all FCFFs using **WACC**  
+- Calculates a **terminal value** using the Gordon Growth Model  
+- Sums all discounted cash flows to estimate **Enterprise Value**  
+- Subtracts net debt to get **Equity Value**  
+- Divides by shares outstanding to estimate **intrinsic value per share**  
+""")
+
+    with st.expander("What is this model used for?"):
+        st.markdown("""
+DCF valuation is widely used in:
+
+- Investment banking  
+- Equity research  
+- Corporate finance  
+- Private equity  
+- Business controlling  
+
+It helps determine whether a company is **undervalued or overvalued** by comparing intrinsic value to market price.
+
+It is also used for:
+
+- Acquisition decisions  
+- Strategic planning  
+- Capital budgeting  
+- Scenario and sensitivity analysis  
+""")
+
+    with st.expander("How does a DCF actually create value? (Conceptual Explanation)"):
+        st.markdown("""
+A DCF works by translating a company’s **future potential** into a value today.
+
+### 1. The business generates cash flows over time  
+A company earns money each year. These future cash flows are the foundation of value.  
+DCF asks: *“How much are those future cash flows worth today?”*
+
+### 2. Money in the future is worth less than money today  
+Because of risk, inflation, and opportunity cost, future cash flows must be **discounted**.  
+This is why we use **WACC** — it represents the required return investors demand.
+
+### 3. The forecast period captures the near‑term performance  
+You explicitly model the next 5–10 years.  
+This shows how the business grows, invests, and generates cash in the medium term.
+
+### 4. The terminal value captures the long‑term future  
+After the forecast period, the business is assumed to grow steadily forever.  
+This “steady‑state” value is called the **terminal value**, and it usually represents most of the company’s worth.
+
+### 5. Discount everything back to today  
+Both the forecast cash flows and the terminal value are discounted using WACC.  
+This converts long‑term potential into a **present‑day valuation**.
+
+### 6. Adjust for debt to get equity value  
+Enterprise value reflects the whole business.  
+Subtracting net debt gives the value that belongs to shareholders.
+
+### 7. Divide by shares to get intrinsic value per share  
+This tells you what each share is fundamentally worth based on the company’s ability to generate cash.
+
+---
+
+**In short:**  
+A DCF values a company by estimating all the cash it will ever produce, adjusting for risk, and converting that into today’s money.  
+""")
+
+ 

@@ -48,20 +48,19 @@ def render_npv_tool(go_to=None):
     st.title("💰 NPV / IRR / Payback Calculator")
     scroll_top()
 
-    # ✅ Back button UNDER heading
     if go_to is not None:
         if st.button("⬅️ Back to Home", use_container_width=True):
             go_to("home")
 
-    st.write(
-        "Evaluate an investment by calculating Net Present Value (NPV), "
-        "Internal Rate of Return (IRR), and Payback Period."
-    )
+    st.markdown(
+    "Evaluate an investment by calculating Net Present Value (NPV), "
+    "Internal Rate of Return (IRR), and Payback Period.\n\n"
+    "**More information below ↓**"
+)
+
 
     st.markdown("---")
 
-    # -----------------------------
-   
     # -----------------------------
     # Inputs
     # -----------------------------
@@ -79,13 +78,15 @@ def render_npv_tool(go_to=None):
         )
 
     with colB:
-        discount_rate = st.number_input(
-            "Discount Rate (%)",
-            min_value=0.0,
-            value=10.0,
-            step=0.5,
-            key="rate"
-        ) / 100
+    	discount_rate = st.number_input(
+        "Discount Rate (%)",
+        min_value=0.0,
+        value=10.000,
+        step=0.01,
+        format="%.3f",
+        key="rate"
+    ) / 100
+
 
     with colC:
         years = st.number_input(
@@ -114,12 +115,10 @@ def render_npv_tool(go_to=None):
     st.markdown("---")
 
     # =====================================================
-    # ✅ AUTO CALCULATION
+    # AUTO CALCULATION
     # =====================================================
 
-    # -----------------------------
     # NPV
-    # -----------------------------
     discounted = []
     npv = -initial_investment
 
@@ -128,14 +127,10 @@ def render_npv_tool(go_to=None):
         discounted.append(dcf)
         npv += dcf
 
-    # -----------------------------
-    # IRR
-    # -----------------------------
-    irr = nf.irr([-initial_investment] + cash_flows)
+    # IRR (high precision)
+    irr = float(nf.irr([-initial_investment] + cash_flows))
 
-    # -----------------------------
     # Payback
-    # -----------------------------
     cumulative = 0
     payback = None
 
@@ -157,7 +152,7 @@ def render_npv_tool(go_to=None):
     col1, col2, col3 = st.columns(3)
 
     col1.metric("💵 NPV", f"{format_number(npv)} SEK")
-    col2.metric("📈 IRR", f"{irr*100:.2f}%")
+    col2.metric("📈 IRR", f"{irr*100:.4f}%")  # ← 4 decimals
     col3.metric(
         "⏳ Payback Period",
         f"{payback:.2f} years" if payback else "Not reached"
@@ -181,14 +176,6 @@ def render_npv_tool(go_to=None):
             "Discounted Cash Flow (SEK)": lambda x: format_number(x)
         })
     )
-
-    st.markdown("---")
-
-    # -----------------------------
-    # Line Chart
-    # -----------------------------
-    st.subheader("📉 Cash Flow Chart")
-    st.line_chart(df, x="Year", y=["Cash Flow (SEK)", "Discounted Cash Flow (SEK)"])
 
     st.markdown("---")
 
@@ -227,9 +214,6 @@ def render_npv_tool(go_to=None):
     tornado_df["Range"] = abs(tornado_df["High Impact"] - tornado_df["Low Impact"])
     tornado_df = tornado_df.sort_values("Range", ascending=True)
 
-    # -----------------------------
-    # Plotly Tornado Chart
-    # -----------------------------
     fig = go.Figure()
 
     for idx, row in tornado_df.iterrows():
@@ -240,7 +224,7 @@ def render_npv_tool(go_to=None):
             orientation="h",
             name="-10%",
             marker_color="salmon",
-            showlegend=bool(idx == tornado_df.index[0])  # ✅ FIX
+            showlegend=bool(idx == tornado_df.index[0])
         ))
 
         fig.add_trace(go.Bar(
@@ -249,7 +233,7 @@ def render_npv_tool(go_to=None):
             orientation="h",
             name="+10%",
             marker_color="lightgreen",
-            showlegend=bool(idx == tornado_df.index[0])  # ✅ FIX
+            showlegend=bool(idx == tornado_df.index[0])
         ))
 
     fig.update_layout(
@@ -262,3 +246,71 @@ def render_npv_tool(go_to=None):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    # =========================================================
+    # ADDITIONAL INFORMATION SECTION
+    # =========================================================
+    st.markdown("---")
+    st.header("📘 Additional Information")
+
+    with st.expander("What is NPV?"):
+        st.markdown(r"""
+**Net Present Value (NPV)** measures the value today of future cash flows, discounted at a chosen rate.
+
+- **NPV > 0** → The investment **creates value**  
+- **NPV < 0** → The investment **destroys value**  
+- **NPV = 0** → The investment **breaks even**  
+
+### Formula
+
+
+
+\[
+NPV = \sum_{t=1}^{N} \frac{CF_t}{(1+r)^t} - \text{Initial Investment}
+\]
+
+
+
+Where:  
+- \( CF_t \) = cash flow in year t  
+- \( r \) = discount rate  
+- \( N \) = number of years  
+""")
+
+    with st.expander("What is IRR?"):
+        st.markdown(r"""
+**Internal Rate of Return (IRR)** is the discount rate that makes the NPV equal to zero.
+
+It represents the investment’s annualized return.
+
+Decision rule:
+
+- IRR > Discount Rate → Accept  
+- IRR < Discount Rate → Reject  
+""")
+        st.caption("If you enter the IRR above as the discount rate, the NPV will equal exactly zero.")
+
+    with st.expander("What is Payback Period?"):
+        st.markdown("""
+The **Payback Period** measures how long it takes to recover the initial investment.
+
+It ignores:
+
+- the time value of money  
+- cash flows after payback  
+
+…but it is useful for quick risk assessments.
+""")
+
+    with st.expander("Sensitivity Analysis Explained"):
+        st.markdown("""
+The **Tornado Chart** shows how sensitive NPV is to changes in:
+
+- Initial investment  
+- Annual cash flows  
+- Discount rate  
+
+A wider bar = greater impact on NPV.
+""")
+
+    

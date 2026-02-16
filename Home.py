@@ -206,12 +206,12 @@ st.markdown("<div style='height:25px;'></div>", unsafe_allow_html=True)
 # TOOL DEFINITIONS
 # ---------------------------------------------------------
 tools = [
-    ("📊", "NPV / IRR / Payback Calculator", "npv", False),
-    ("📉", "CAPM Calculator", "capm", False),
-    ("💰", "DCF Valuation Model", "dcf", False),
-    ("📈", "Financial Ratios Dashboard", "financial_statements", False),
-    ("🏦", "Bond Pricing Tool", None, True),
-    ("🧮", "WACC Calculator", None, True),
+    ("📊", "NPV / IRR / Payback Calculator", "NPV and IRR Calculator", False),
+    ("📉", "CAPM Calculator", "CAPM Calculator", False),
+    ("💰", "DCF Valuation Model", "DFC Valuation Model", False),
+    ("📈", "Financial Ratios Dashboard", "Financial Statement Dashboard", False),
+    ("🏦", "Bond Pricing Tool", "Bond Pricing Tool", False),
+    ("🧮", "WACC Calculator", "WACC Calculator", False),
 ]
 
 cols = st.columns(3)
