@@ -38,7 +38,7 @@ def render_bond_tool():
 
     /* Metric card */
     div[data-testid="stMetric"] {
-        background-color: #161b22;
+        background-color: #11142E;
         padding: 1.3rem;
         border-radius: 16px;
         border: 1px solid #30363d;
