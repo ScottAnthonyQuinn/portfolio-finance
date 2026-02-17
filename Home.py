@@ -10,7 +10,7 @@ from components.CAPM import render_capm_tool
 from components.DCF import render_dcf_tool
 from components.Financial_Statement import render_financial_statement
 
-# Check if user has visited any tool page
+# Check if user has visited any tool pa
 show_nav = st.session_state.get("visited_tool", False)
 
 # ---------------------------------------------------------
@@ -29,10 +29,6 @@ st.markdown("""
         window.parent.document.querySelector('iframe').scrollTo(0, 0);
     </script>
 """, unsafe_allow_html=True)
-
-
-
-
 
 
 # ---------------------------------------------------------
