@@ -20,7 +20,7 @@ st.set_page_config(
     page_title="Scott Quinn – Finance Portfolio",
     page_icon="💼",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # Scroll-to-top script
@@ -30,17 +30,7 @@ st.markdown("""
     </script>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# CONDITIONAL SIDEBAR HIDING
-# ---------------------------------------------------------
-if not show_nav:
-    st.markdown("""
-    <style>
-        [data-testid="stSidebar"] {display: none !important;}
-        [data-testid="stSidebarNav"] {display: none !important;}
-        [data-testid="collapsedControl"] {display: none !important;}
-    </style>
-    """, unsafe_allow_html=True)
+
 
 
 
